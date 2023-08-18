@@ -11,9 +11,10 @@ class Scraper:
     """
 
     def __init__(self, url: str):
+        self._offer_src: BeautifulSoup = None
         self.initial_url = url
 
-    def scrape_offers(self):
+    def scrape_page(self):
         page = requests.get(configs.URL)
         results_page = BeautifulSoup(page.text, 'html.parser')
         offer_cl = 'lnk1'
@@ -24,11 +25,12 @@ class Scraper:
             print(offer_page_url.encoding)
             offer_page_url.encoding = 'utf-8'
             print(offer_page_url.text)
-            offer_page_soup = BeautifulSoup(offer_page_url.content, 'html.parser')
-            date_elem_parent = offer_page_soup.find('div', class_='adPrice')
-            date_elem = date_elem_parent.findChild('div', class_='info')
-            print(date_elem.text)
-            print(date_manager.parse_date(date_elem.text))
+            self._offer_src = BeautifulSoup(offer_page_url.content, 'html.parser')
+            self._scrape_offer()
+            # date_elem_parent = self.offer_src.find('div', class_='adPrice')
+            # date_elem = date_elem_parent.findChild('div', class_='info')
+            # print(date_elem.text)
+            # print(date_manager.parse_date(date_elem.text))
             break #temp so we dont overload the server with requests while testing
         # General idea:
         # 1. Get the offers from the first page
@@ -38,3 +40,35 @@ class Scraper:
         # Challenges:
         # compare the dates in textual Bulgarian - partialy implemented
         # navigate to next page
+    def _scrape_offer(self):
+        # scrape the date published
+        if self._offer_src is not None:
+            date_manager = DateHelper()
+            try:
+                # date_elem_parent = self._offer_src.find('div', class_='adPrice')
+                # date_elem = date_elem_parent.findChild('div', class_='info')
+                # print(date_manager.parse_date(date_elem.text))
+
+                # scrape the price
+                price_cur_str = self._offer_src.find('div', id='cena').text.split()
+                currency = price_cur_str[-1]
+                price_cur_str.pop()
+                price = int(''.join(price_cur_str))
+                print(price)
+                print(currency)
+
+                # scrape the adParams- size and level-info
+                offer_parameters = self._offer_src.find('div', class_='adParams')
+                children = offer_parameters.findChildren('div')
+                size_str = children[0].text
+                size = int(size_str.split()[1])
+                level_info_str = children[1].text
+                print(size_str)
+                print(size)
+                print(level_info_str)
+
+                size_str = list(offer_parameters.children)[1]
+                size_str_span = size_str
+                print(children)
+            except AttributeError as ae:
+                print(ae)
