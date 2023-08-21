@@ -45,30 +45,36 @@ class Scraper:
         if self._offer_src is not None:
             date_manager = DateHelper()
             try:
-                # date_elem_parent = self._offer_src.find('div', class_='adPrice')
-                # date_elem = date_elem_parent.findChild('div', class_='info')
-                # print(date_manager.parse_date(date_elem.text))
-
+                self._scrape_date_data(date_manager)
                 # scrape the price
-                price_cur_str = self._offer_src.find('div', id='cena').text.split()
-                currency = price_cur_str[-1]
-                price_cur_str.pop()
-                price = int(''.join(price_cur_str))
-                print(price)
-                print(currency)
-
+                price, currency = self._scrape_price_offer()
                 # scrape the adParams- size and level-info
-                offer_parameters = self._offer_src.find('div', class_='adParams')
-                children = offer_parameters.findChildren('div')
-                size_str = children[0].text
-                size = int(size_str.split()[1])
-                level_info_str = children[1].text
-                print(size_str)
-                print(size)
-                print(level_info_str)
-
-                size_str = list(offer_parameters.children)[1]
-                size_str_span = size_str
-                print(children)
+                size, level_info = self._scrape_size_lvl()
             except AttributeError as ae:
                 print(ae)
+
+    def _scrape_date_data(self, date_manager):
+        date_elem_parent = self._offer_src.find('div', class_='adPrice')
+        date_elem = date_elem_parent.findChild('div', class_='info')
+        print(date_manager.parse_date(date_elem.text))
+
+    def _scrape_size_lvl(self):
+        offer_parameters = self._offer_src.find('div', class_='adParams')
+        children = offer_parameters.findChildren('div')
+        size_str = children[0].text
+        size = int(size_str.split()[1])
+        level_info_str = children[1].text
+        print(size_str)
+        print(size)
+        print(level_info_str)
+        return size, level_info_str
+
+    def _scrape_price_offer(self):
+
+        price_cur_str = self._offer_src.find('div', id='cena').text.split()
+        currency = price_cur_str[-1]
+        price_cur_str.pop()
+        price = int(''.join(price_cur_str))
+       # print(price)
+       # print(currency)
+        return price, currency
