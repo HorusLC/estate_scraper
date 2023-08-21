@@ -50,8 +50,14 @@ class Scraper:
                 price, currency = self._scrape_price_offer()
                 # scrape the adParams- size and level-info
                 size, level_info = self._scrape_size_lvl()
+                # scrape the descr with truncation
+                self._scrape_description(145)
             except AttributeError as ae:
                 print(ae)
+
+    def _scrape_description(self, max_symbols):
+        descr = self._offer_src.find('div', id='description_div')
+        return descr.text[0:max_symbols]
 
     def _scrape_date_data(self, date_manager):
         date_elem_parent = self._offer_src.find('div', class_='adPrice')
